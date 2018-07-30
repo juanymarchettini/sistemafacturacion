@@ -1,0 +1,1 @@
+<?php echo $this->element('backend/facturas/formfactura',array('action'=>'add','titulo'=>'Nuevo Pedido')); ?>

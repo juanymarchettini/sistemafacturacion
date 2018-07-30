@@ -1,0 +1,1 @@
+<?php echo $this->element('backend/pagos/formpagos',array('action'=>'pagar','label'=>'Pago de Factura Nro: '.$factura['Factura']['id'].'- Cliente: '.ucwords($factura['Factura']['nombre']).','.ucwords($factura['Factura']['apellido']))); ?>

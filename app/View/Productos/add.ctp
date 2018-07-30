@@ -1,0 +1,1 @@
+<?php echo $this->element('backend/productos/formproductos',array('label'=>'Nuevo Producto')); ?>

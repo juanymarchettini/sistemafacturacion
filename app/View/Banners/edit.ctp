@@ -1,0 +1,1 @@
+<?php echo $this->element('backend/banners/formbanners',array('label'=>'Modificar Banner')); ?>

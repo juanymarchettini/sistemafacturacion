@@ -1,0 +1,1 @@
+<?php echo $this->element('backend/cuentasbancarias/formcuentas',array('label'=>'Editar Cuenta', 'action'=>'edit')); ?>

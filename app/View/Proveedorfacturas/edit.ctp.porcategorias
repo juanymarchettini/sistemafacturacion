@@ -1,0 +1,273 @@
+<?php echo $this->Element('backend/headerpage',array('titleheader'=>'Facturas Proveedores','shorturl'=>'Proveedores FAct')); ?>
+<?php
+    echo $this->Form->create('Proveedorfactura', array(
+    'type'=>'file',
+    'action'=>'edit',
+    'inputDefaults' => array(
+        'div' => 'form-group',
+        'wrapInput' => false,
+        'class' => 'form-control'
+    ),
+    'class' => false
+)); 
+
+?>
+
+
+<section class="panel panel-danger">
+	<header class='panel-heading'>
+		<h2 class="panel-title"><?php echo 'Facturas Proveedores'; ?></h2>
+	</header>
+	<div class="panel-body">
+		<section  class="col-md-12">
+			<fieldset>
+				<legend><?php echo __('Datos Factura'); ?></legend>
+				<div class="row">
+				<?php
+					echo $this->Form->hidden('id', array('class'=>'col-md-6'));
+					echo $this->Form->input('proveeodr_id',array('label'=>'Nombre del Proveedor','options'=>array('1'=>'Saphirus'),'div'=>'col-md-4','required'));
+					echo $this->Form->input('nrofact',array('label'=>'Nrofact','div'=>'col-md-4','required'=>'required'));
+					echo $this->Form->input('fecha',array('label'=>'Fecha Fact.','dateFormat'=>'DMY','monthNames' => false,'maxYear' => date('Y')+1,'minYear' => date('Y')-1,'div'=>'col-md-4','dateformart'=>'D-M-Y' ));
+					echo $this->Form->hidden('user_id',array('value'=>$userid));
+				?>
+				</div>
+			<div class="tabs tabs-vertical tabs-left" style="margin-top:50px;">
+				<ul class="nav nav-tabs col-sm-3 col-xs-5">
+				<?php   $categoriaid='-1';
+				    foreach ($categorias as  $item) { 
+				    	$printhtml='';
+				  		// Solo se realiza este control para ver si es el primero que debe estar activo
+			  			($categoriaid == -1)? $printhtml='<li class="active" data-toggle="tab">' :  $printhtml='<li data-toggle="tab">';
+			  			echo $printhtml.'<a data-toggle="tab" href=#section'.$item['Categoria']['id'].'>'.$item['Categoria']['nombre'].'</a></li>';
+				  		$categoriaid = $item['Categoria']['id'];
+				  		
+				  	}
+				?>
+				</ul>
+				<div class="tab-content col-sm-12 col-xs-7">
+			    	
+						<?php 
+						  	$i=0;
+						  	$totalfact=0;
+						  	$categoriaid='-1';
+						  	$conjuntocategorias=array();
+					    ?>
+					    <?php   
+					    foreach ($categorias as  $catseccion) : 
+				    	    $printhtml='';
+				       
+					  		if  ($catseccion['Categoria']['id'] != $categoriaid){ 
+					  			($categoriaid == -1)? $printhtml='<div id="section'.$catseccion['Categoria']['id'].'" class="tab-pane fade in active">' :  $printhtml='</tbody>
+								</table></div></div><div id="section'.$catseccion['Categoria']['id'].'" class="tab-pane fade">';
+					  			echo '<tr><td colspan="3"></td><td colspan="2"><div  style="font-size: 14px; font-family: serif;"id="jq_resutadosubtotales'.$categoriaid.'"></div></td></tr>';
+						  		echo $printhtml;
+						  		$categoriaid = $catseccion['Categoria']['id'];
+							?>
+							    <div class="table-responsive cart_info">
+								<table class="table table-condensed">
+								<thead>
+									<tr class="cart_menu">
+										<td colspan="2" class="description">Producto</td>
+										
+										<td class="quantity">Cantidad</td>
+										<td class="price">Precio x unidad</td>
+										<td class="total">Sub-Total</td>
+										
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+						}   ?>
+						<?php 		
+						//CREAR HELPER
+									// Genero un array con  la cateogria , sus subcate y sus productos
+									$categoriaysubcatgoria=array();
+									$categoriaysubcatgoria[]=$catseccion['Categoria'];
+									$categoriaysubcatgoria[0]['Producto']=$catseccion['Producto'];
+									
+									foreach ($catseccion['Subcategoria'] as $itemsubcategoria ) {
+										$categoriaysubcatgoria[]= $itemsubcategoria;
+									}
+	
+									
+						/// FIN DE HELPERS			
+									
+									foreach ($categoriaysubcatgoria as  $subcategoria) :
+										
+										if (isset($subcategoria['Producto'])){
+										foreach ($subcategoria['Producto'] as  $item) : 
+
+											$conjuntocategorias[]=$subcategoria['id'];
+											//if ( $item['disponible']  && $item['stock']>0){
+										  	 ?>
+											<tr subcategoria=<?php echo $subcategoria['id']; ?> class=<?php echo "'"."jq_nro_renglon_".$i." "."jq_cat_id_".$categoriaid."'";?> >
+												<td colspan="2" class="cart_description">
+													<?php
+														echo $this->Form->hidden('Proveedordetalle.'.$i.'.producto_id', array('value'=>$item['id'],'disabled'=>'disabled'));
+														echo $this->Form->hidden('Proveedordetalle.'.$i.'.proveedorfactura_id', array('disabled'=>'disabled'));
+														 echo $this->Form->hidden('Proveedordetalle.'.$i.'.nombre', array('value'=>$item['nombre'],'disabled'=>'disabled')); ?>
+													<?php echo $this->Form->hidden('Proveedordetalle.'.$i.'.categoria_id', array('value'=>$item['categoria_id'],'disabled'=>'disabled')); ?>
+													<h4><?php echo $item['nombre']; ?></h4>
+													<?php echo $this->Form->hidden('Proveedordetalle.'.$i.'.codigo', array('value'=>$item['codigo'],'disabled'=>'disabled'));?>
+													
+												</td>
+
+												
+
+												<td class=<?php echo ' "jq_input cart_quantity jq_inputcantidad_'.$categoriaid.'"'; ?> >
+													<div class="cart_quantity_button">
+														
+														
+														<?php echo $this->Form->input('Proveedordetalle.'.$i.'.cantidad', array( 'label'=>false, 'class'=>"cart_quantity_input".$i, 'idrenglon'=>$i,'idsubcategoria'=>$subcategoria['id'] ,'idcategoria'=>$categoriaid ,'type'=>"number",'div'=>false ,'autocomplete'=>"off", 'size'=>"3",'value'=>0,'min'=>'0','max'=>'9999','disabled'));?>
+														
+														
+
+													</div>
+												</td>
+
+												<td class= <?php echo ' " jq_input cart_price jq_categoriaprecio_'.$categoriaid.' "'; ?> >
+													<?php 
+														
+															echo $this->Form->input('Proveedordetalle.'.$i.'.precio', array('label'=>false,'class'=>'jq_inputprecio  precio_'.$i,'idrenglon'=>$i, 'value'=>0,'min'=>'0','max'=>'9999','disabled'=>'disabled'));
+														
+													?>
+													
+												</td>
+
+												<td class=<?php echo ' "cart_total jq_inputtotal_'.$categoriaid.'"'; ?> >
+													<?php echo $this->Form->hidden('Proveedordetalle.'.$i.'.totalinput', array('class'=>'jq_subtotal jq_totalinput_'.$i, 'type'=>"number", 'step'=>'any','value'=>0,'disabled'=>'disabled')); ?>
+													<p class="cart_total_price"  >$
+														<span class=<?php echo 'total_'.$i; ?>>
+															<?php 
+																echo 0;
+																$totalfact=$totalfact+0;
+															?>
+														</span>
+													</p>
+												</td>			
+											</tr>
+									 	<?php $i++; 
+									 		
+										endforeach;
+										}
+									endforeach;
+								  	?>
+								  <?php
+								 	// esta linea se utiliza para cerrar cada tab
+							    	echo '<tr><td colspan="3"></td><td colspan="2"><div  style="font-size: 14px; font-family: serif;"id="jq_resutadosubtotales'.$categoriaid.'"></div></td></tr>';     
+					endforeach; 	 
+									  ?>
+								</tbody>
+							</table>
+						</div>
+									
+				</div>
+			</div>
+		</div>
+		<div class="step-one">
+			<h2 class="heading">Detalle de Compra</h2>
+		</div>
+		<table class="table table-condensed total-result">
+			<tr>
+				<td>Compra Sub Total</td>
+				<td><span>$ </span><span class="jq_totalfact"> <?php  echo $totalfact; ?></span>.-</td>
+			</tr>
+		    <tr class="shipping-cost">
+				<td>Gasto de Envio</td>
+				<td>Consultar</td>										
+			</tr>
+			<tr>
+				<td>Total</td>
+				<?php echo $this->Form->hidden('total', array('value'=>$totalfact)); ?>
+				<td><span>$ </span><span class="jq_totalfact"><?php  echo $totalfact; ?></span>.-</td>
+			</tr>
+		</table>
+			<?php
+			echo $this->Form->submit(__('Guardar Factura'),array('class'=>'mb-xs mt-xs mr-xs btn btn-primary'));
+			echo $this->Form->end();
+			?>
+			 </div>
+			</fieldset>
+		</section>
+	</div>
+</section>
+
+<script type="text/javascript">
+function ActualizarRenglondDisabled(nrorenglon){
+	var rengloncategoria = 'jq_nro_renglon_'+nrorenglon;
+	
+	$("."+rengloncategoria+" input").each(function(){
+		$(this).removeAttr("disabled");
+	});
+
+}
+$(document).on("click",".jq_input", function(event) {
+
+	
+	var renglon = $(this).find('input').attr('idrenglon');
+	ActualizarRenglondDisabled(renglon);
+});
+
+
+function ActualizarTotales(renglon){
+
+	var cantidad=$('.cart_quantity_input'+renglon).val(),
+		precio = $('.precio_'+renglon).val(),
+		totalfact = $('#ProveedorfacturaTotal').val(),
+		subtotal = parseFloat(cantidad)*parseFloat(precio);
+
+
+	$('.total_'+renglon).html(subtotal.toFixed(2));
+	console.log(totalfact);
+	console.log(subtotal);
+	totalfact = parseFloat(totalfact)+subtotal;
+	$('.jq_totalfact').html(totalfact);
+	$('#ProveedorfacturaTotal').val(totalfact);
+}
+
+// FUNCION PARA TOTALES SUBTOTALES
+$(document).on("keyup",".jq_input", function(event) {
+	var renglon = $(this).find('input').attr('idrenglon');
+	ActualizarTotales(renglon);
+});
+
+$(document).on("change",".jq_input", function(event) {
+	var renglon = $(this).find('input').attr('idrenglon');
+	ActualizarTotales(renglon);
+});
+
+
+
+/** FUNCION PARA CONTROLAR MAXIMOS Y NO TIPEAR DE MAS */
+
+function createValidator(element) {
+    return function() {
+    	var rengloninput= element.getAttribute('idrenglon');
+		console.log(rengloninput);
+        var min = parseInt(element.getAttribute("min")) || 0;
+        var max = parseInt(element.getAttribute("max")) || 0;
+
+        var value = parseInt(element.value) || min;
+        element.value = value; // make sure we got an int
+
+        if (value < min) element.value = min;
+        if (value > max) element.value = max;
+    }
+}
+
+//var elm = document.body.querySelector("input[type=number]");
+
+//elm.onkeyup = createValidator(elm);
+
+
+</script>
+<style type="text/css">
+
+#ProveedorfacturaFechaDay, #ProveedorfacturaFechaMonth, #ProveedorfacturaFechaYear{
+	width: 100px;
+	display:inline-block;
+}
+label[for="ProveedorfacturaFechaDay"]{
+	display: block;
+}
+</style>
